@@ -1,0 +1,28 @@
+# https://evilmartians.github.io/lefthook/configuration.html
+
+pre-commit:
+  parallel: false
+  commands:
+    test:
+      run: go test ./...
+      glob: "*.go"
+    vet:
+      run: go vet ./...
+      glob: "*.go"
+    lint:
+      run: |
+        if command -v golangci-lint >/dev/null 2>&1; then
+          golangci-lint run ./...
+        else
+          echo "golangci-lint not installed, skipping"
+        fi
+      glob: "*.go"
+    fmt:
+      run: |
+        out=$(gofmt -l .)
+        if [ -n "$out" ]; then
+          echo "Files need formatting:"
+          echo "$out"
+          exit 1
+        fi
+      glob: "*.go"
