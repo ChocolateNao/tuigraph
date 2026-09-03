@@ -48,19 +48,19 @@ clean:
 
 # Run the static demo (all diagram types)
 demo:
-    go run ./cmd/chartdemo
+    go run ./_example/07_static
 
 # Run the live real-time demo
 demo-live:
-    go run ./cmd/chartdemo -live
+    go run ./_example/06_live
 
 # Run demo without colors
 demo-no-color:
-    NO_COLOR=1 go run ./cmd/chartdemo
+    NO_COLOR=1 go run ./_example/07_static
 
 # Run demo in pure ASCII mode
 demo-ascii:
-    LC_ALL=C NO_COLOR=1 go run ./cmd/chartdemo
+    LC_ALL=C NO_COLOR=1 go run ./_example/07_static
 
 # Install golangci-lint (if not present)
 setup-lint:

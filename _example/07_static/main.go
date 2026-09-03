@@ -1,65 +1,15 @@
 package main
 
 import (
-	"context"
-	"flag"
 	"fmt"
 	"math"
 	"math/rand"
-	"os"
-	"os/signal"
 	"time"
 
 	"github.com/ChocolateNao/tuichart"
 )
 
 func main() {
-	live := flag.Bool("live", false, "run the real-time demo (Ctrl+C to quit)")
-	flag.Parse()
-
-	if *live {
-		runLive()
-		return
-	}
-	runStatic()
-}
-
-func runLive() {
-	g := tuichart.New(tuichart.WithColor256(), tuichart.WithUnicode(true))
-
-	p := tuichart.NewPlot().Title("random walk (live)")
-	line := tuichart.NewLine("value").Color(tuichart.Indexed(203))
-	p.Add(line)
-	g.Add(p)
-
-	r := tuichart.NewRing(60)
-	lv := tuichart.NewLive(g,
-		tuichart.WithInterval(100*time.Millisecond),
-		tuichart.OnUpdate(func() {
-			last := 50.0
-			if v := r.Values(); len(v) > 0 {
-				last = v[len(v)-1]
-			}
-			r.Push(math.Min(90, math.Max(10, last+(rand.Float64()-0.5)*8)))
-			line.SetValues(r.Values())
-		}),
-	)
-	fmt.Fprintln(os.Stderr, "live demo running — Ctrl+C to exit")
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		c := make(chan os.Signal, 1)
-		signalNotify(c)
-		<-c
-		cancel()
-	}()
-	lv.Run(ctx)
-}
-
-func signalNotify(c chan<- os.Signal) {
-	signal.Notify(c, os.Interrupt)
-}
-
-func runStatic() {
 	rng := rand.New(rand.NewSource(42))
 
 	g := tuichart.New()
@@ -86,8 +36,8 @@ func runStatic() {
 		Title("system load").
 		XLabel("seconds").YLabel("%").
 		Add(
-			tuichart.NewLine("cpu", cpu...).Color(tuichart.Indexed(203)),
-			tuichart.NewLine("mem", mem...).Color(tuichart.Indexed(39)),
+			tuichart.NewLine("cpu", cpu...).Color(tuichart.Salmon),
+			tuichart.NewLine("mem", mem...).Color(tuichart.DodgerBlue),
 			tuichart.NewScatter("samples", scatter...).Color(tuichart.Yellow).Marker('×'),
 		)
 	g.Add(plot)
@@ -119,7 +69,6 @@ func runStatic() {
 		Color(tuichart.Cyan).
 		Title("latency distribution (ms)").
 		ShowValues(true)
-
 	hist.SetXFormatter(func(f float64) string { return fmt.Sprintf("%.0fms", f) })
 	g.Add(hist)
 
@@ -204,18 +153,11 @@ func runStatic() {
 		tuichart.NewGauge(34, 100).Style(tuichart.GaugeArrow).Title("disk"),
 	)
 	g.Row(
-		tuichart.NewGauge(
-			8,
-			10,
-		).Style(
-			tuichart.GaugeSegments,
-		).Title(
-			"quota",
-		).Color(
-			tuichart.Green,
-		).ShowPercent(
-			false,
-		),
+		tuichart.NewGauge(8, 10).
+			Style(tuichart.GaugeSegments).
+			Title("quota").
+			Color(tuichart.Green).
+			ShowPercent(false),
 		tuichart.NewGauge(5, 10).Style(tuichart.GaugeASCII).Title("legacy panel"),
 	)
 
@@ -223,12 +165,8 @@ func runStatic() {
 		[]string{"mon", "tue", "wed", "thu", "fri"},
 		[]float64{120, 95, 140, 160, 130},
 	).
-		Title(
-			"requests — horizontal (axis switch)",
-		).
-		Orientation(
-			tuichart.OrientHorizontal,
-		)
+		Title("requests — horizontal (axis switch)").
+		Orientation(tuichart.OrientHorizontal)
 	g.Add(swapped)
 
 	candles := tuichart.NewCandlestick().Title("ACME — daily OHLC")
