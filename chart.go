@@ -1,4 +1,4 @@
-package graph
+package tuichart
 
 import (
 	"fmt"
@@ -8,13 +8,13 @@ import (
 
 // Options configures a Chart at construction time.
 type Options struct {
-	levelOverride   Level
-	hasLevel        bool
-	unicodeOverride int8 // -1 auto, 0 off, 1 on
 	palette         []Color
+	levelOverride   Level
 	width           int
 	gap             int
 	diagramHeight   int
+	hasLevel        bool
+	unicodeOverride int8
 }
 
 // Option mutates Chart options.
@@ -75,9 +75,9 @@ type rowEntry struct{ d Drawable }
 // arranged side by side with Row.
 type Chart struct {
 	title      string
-	titleAlign Align
 	rows       [][]rowEntry
 	opts       Options
+	titleAlign Align
 }
 
 // New creates an empty chart container. Options configure rendering behavior;
@@ -271,7 +271,7 @@ func (c *Chart) RenderTo(w io.Writer, width ...int) error {
 		err = io.ErrShortWrite
 	}
 	if err != nil {
-		return fmt.Errorf("go-graph: rendering to writer failed: %w", err)
+		return fmt.Errorf("tuichart: rendering to writer failed: %w", err)
 	}
 	return nil
 }

@@ -1,4 +1,4 @@
-package graph
+package tuichart
 
 import (
 	"strings"

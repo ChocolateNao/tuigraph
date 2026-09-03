@@ -1,4 +1,4 @@
-package graph
+package tuichart
 
 import (
 	"io"
@@ -106,7 +106,8 @@ func detectEnvLevel() Level {
 	if os.Getenv("WT_SESSION") != "" {
 		return LevelTrue
 	}
-	if strings.Contains(term, "256color") || strings.Contains(term, "xterm-kitty") || strings.Contains(term, "alacritty") {
+	if strings.Contains(term, "256color") || strings.Contains(term, "xterm-kitty") ||
+		strings.Contains(term, "alacritty") {
 		return Level256
 	}
 	return Level16

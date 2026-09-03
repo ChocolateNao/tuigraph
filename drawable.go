@@ -1,9 +1,9 @@
-package graph
+package tuichart
 
 // Ctx carries rendering context passed to Drawables.
 type Ctx struct {
-	Info    Info
 	Palette []Color
+	Info    Info
 	next    int
 }
 
@@ -25,8 +25,8 @@ func (rc *Ctx) Next() Color {
 // LegendEntry is one row of a chart legend.
 type LegendEntry struct {
 	Label string
-	Style Style
 	Glyph string
+	Style Style
 }
 
 // Drawable is implemented by everything that can be placed in a Chart.

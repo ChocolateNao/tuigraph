@@ -1,6 +1,6 @@
 //go:build !unix && !windows
 
-package graph
+package tuichart
 
 import "os"
 

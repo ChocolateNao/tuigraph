@@ -1,6 +1,6 @@
 //go:build unix
 
-package graph
+package tuichart
 
 import (
 	"os"
@@ -23,7 +23,13 @@ func tiocgwinsz() uintptr {
 }
 
 func ioctl(fd, req uintptr) error {
-	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, fd, req, uintptr(unsafe.Pointer(&winsize{})))
+	//nolint:gosec // ioctl requires unsafe.Pointer for syscall
+	_, _, errno := syscall.Syscall(
+		syscall.SYS_IOCTL,
+		fd,
+		req,
+		uintptr(unsafe.Pointer(&winsize{})),
+	)
 	if errno != 0 {
 		return errno
 	}
@@ -36,7 +42,12 @@ func platformIsTTY(f *os.File) bool {
 
 func termSize(f *os.File) (int, int, bool) {
 	var ws winsize
-	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, f.Fd(), tiocgwinsz(), uintptr(unsafe.Pointer(&ws)))
+	_, _, errno := syscall.Syscall(
+		syscall.SYS_IOCTL,
+		f.Fd(),
+		tiocgwinsz(),
+		uintptr(unsafe.Pointer(&ws)), //nolint:gosec // ioctl requires unsafe.Pointer for syscall
+	)
 	if errno != 0 || ws.Col == 0 {
 		return DefaultWidth, DefaultHeight, false
 	}

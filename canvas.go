@@ -1,4 +1,4 @@
-package graph
+package tuichart
 
 import "strings"
 
@@ -24,10 +24,12 @@ func (c cell) blank() bool {
 }
 
 type Canvas struct {
-	w, h   int
-	stride int
 	buf    []cell
-	ox, oy int
+	w      int
+	h      int
+	stride int
+	ox     int
+	oy     int
 }
 
 func NewCanvas(w, h int) *Canvas {

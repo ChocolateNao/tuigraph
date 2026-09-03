@@ -1,3 +1,3 @@
-module github.com/ChocolateNao/go-graph
+module github.com/ChocolateNao/tuichart
 
 go 1.27.0
