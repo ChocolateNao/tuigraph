@@ -2,7 +2,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-  cmd = "go build -o ./tmp/main ./cmd/chartdemo"
+  cmd = "go build -o ./tmp/main ./_example/07_static"
   entrypoint = "./tmp/main"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "migrations"]
