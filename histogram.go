@@ -5,6 +5,7 @@ import (
 	"sort"
 )
 
+// Histogram bins numeric data and renders a bar chart of the counts.
 type Histogram struct {
 	name string
 	data []float64
@@ -13,6 +14,7 @@ type Histogram struct {
 	color Color
 }
 
+// NewHistogram creates a Histogram from the given data slice.
 func NewHistogram(data []float64) *Histogram {
 	return &Histogram{
 		chartBase: newChartBase(),
@@ -36,6 +38,7 @@ func defaultBins(n int) int {
 	return b
 }
 
+// Bins sets the number of bins (1–64) for grouping the data.
 func (h *Histogram) Bins(n int) *Histogram {
 	if n < 1 {
 		n = 1
@@ -47,6 +50,7 @@ func (h *Histogram) Bins(n int) *Histogram {
 	return h
 }
 
+// Color sets the bar fill color; defaults to the first palette entry.
 func (h *Histogram) Color(c Color) *Histogram { h.color = c; return h }
 
 // Orientation switches bar direction; see BarChart.Orientation.
@@ -54,8 +58,11 @@ func (h *Histogram) Orientation(o Orientation) *Histogram { h.SetOrientation(o);
 
 // Title sets the chart title.
 func (h *Histogram) Title(t string) *Histogram { h.SetTitle(t); return h }
-func (h *Histogram) Name(s string) *Histogram  { h.name = s; return h }
 
+// Name sets the series label shown in the legend (default "count").
+func (h *Histogram) Name(s string) *Histogram { h.name = s; return h }
+
+// ShowValues toggles printing the numeric count inside each bar (when it fits).
 func (h *Histogram) ShowValues(on bool) *Histogram { h.SetShowValues(true); return h }
 
 // Counts bins the data and returns counts plus bin edges.
@@ -91,6 +98,7 @@ func (h *Histogram) Counts() (counts []int, edges []float64) {
 	return counts, edges
 }
 
+// HeightHint returns the suggested height in rows for the given width.
 func (h *Histogram) HeightHint(width int) int {
 	if hh := h.chartBase.HeightHint(width); hh > 0 {
 		return hh
@@ -109,6 +117,7 @@ func (h *Histogram) HeightHint(width int) int {
 	return hh
 }
 
+// Draw bins the data and renders the histogram as a bar chart.
 func (h *Histogram) Draw(rc *Ctx, cv *Canvas) {
 	counts, edges := h.Counts()
 	if counts == nil {

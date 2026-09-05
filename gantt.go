@@ -23,6 +23,7 @@ type Gantt struct {
 	chartBase
 }
 
+// NewGantt creates an empty Gantt chart.
 func NewGantt() *Gantt {
 	return &Gantt{chartBase: newChartBase()}
 }
@@ -50,6 +51,7 @@ func (g *Gantt) Task(b GanttBar) *Gantt {
 // Format sets the Go time layout for axis ticks; empty restores auto.
 func (g *Gantt) Format(layout string) *Gantt { g.layout = layout; return g }
 
+// HeightHint returns the suggested height in rows for the given width.
 func (g *Gantt) HeightHint(width int) int {
 	if h := g.chartBase.HeightHint(width); h > 0 {
 		return h
@@ -64,6 +66,7 @@ func (g *Gantt) HeightHint(width int) int {
 	return rows + 3 // grid + tick row + frame
 }
 
+// Draw renders the activity bars and time axis into the canvas.
 func (g *Gantt) Draw(rc *Ctx, cv *Canvas) {
 	inner := g.frameTitle(cv, rc.Info.Unicode)
 	uni := rc.Info.Unicode
@@ -111,7 +114,7 @@ func (g *Gantt) Draw(rc *Ctx, cv *Canvas) {
 		return inner.X + gutter + int(f*float64(gridW-1)+0.5)
 	}
 
-	dim := S(Indexed(240))
+	dim := S(DimGray)
 	tickRow := inner.Y2()
 	barCh := '█'
 	if !uni {

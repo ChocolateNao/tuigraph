@@ -6,13 +6,15 @@ import (
 	"strings"
 )
 
+// Level represents the terminal color capability. Higher levels degrade to
+// lower ones automatically when the terminal does not support them.
 type Level int
 
 const (
-	LevelNone Level = iota
-	Level16
-	Level256
-	LevelTrue
+	LevelNone Level = iota // no color (mono)
+	Level16                // standard 16-color ANSI
+	Level256               // 256-color extended palette
+	LevelTrue              // 24-bit truecolor
 )
 
 type colorKind uint8
@@ -23,6 +25,8 @@ const (
 	colorRGB
 )
 
+// Color represents a terminal color. Use the predefined named color variables
+// (Red, Cyan, DimGray, ...) or construct one with Indexed or RGB.
 type Color struct {
 	kind colorKind
 	idx  uint8
@@ -31,26 +35,51 @@ type Color struct {
 	b    uint8
 }
 
+// Default is the zero value — no color assigned.
+var Default = Color{}
+
+// ANSI 16-color palette.
 var (
-	Default = Color{}
-	Black   = Indexed(0)
-	Maroon  = Indexed(1)
-	Green   = Indexed(2)
-	Olive   = Indexed(3)
-	Navy    = Indexed(4)
-	Purple  = Indexed(5)
-	Teal    = Indexed(6)
-	Silver  = Indexed(7)
-	Gray    = Indexed(8)
-	Red     = Indexed(9)
-	Lime    = Indexed(10)
-	Yellow  = Indexed(11)
-	Blue    = Indexed(12)
-	Fuchsia = Indexed(13)
-	Cyan    = Indexed(14)
-	White   = Indexed(15)
+	Black   = Indexed(0)  // ANSI black
+	Maroon  = Indexed(1)  // ANSI maroon
+	Green   = Indexed(2)  // ANSI green
+	Olive   = Indexed(3)  // ANSI olive
+	Navy    = Indexed(4)  // ANSI navy
+	Purple  = Indexed(5)  // ANSI purple
+	Teal    = Indexed(6)  // ANSI teal
+	Silver  = Indexed(7)  // ANSI silver
+	Gray    = Indexed(8)  // ANSI gray
+	Red     = Indexed(9)  // ANSI red
+	Lime    = Indexed(10) // ANSI lime
+	Yellow  = Indexed(11) // ANSI yellow
+	Blue    = Indexed(12) // ANSI blue
+	Fuchsia = Indexed(13) // ANSI fuchsia
+	Cyan    = Indexed(14) // ANSI cyan
+	White   = Indexed(15) // ANSI white
 )
 
+// Extended 256-color palette — commonly used chart colors.
+var (
+	Azure          = Indexed(21)  // dark azure blue
+	DodgerBlue     = Indexed(39)  // bright dodger blue
+	CornflowerBlue = Indexed(69)  // cornflower blue
+	SkyBlue        = Indexed(75)  // sky blue
+	PaleGreen      = Indexed(114) // pale green
+	MediumPurple   = Indexed(141) // medium purple
+	LightGreen     = Indexed(156) // light green
+	Khaki          = Indexed(179) // khaki yellow
+	BrightRed      = Indexed(196) // bright red
+	HotPink        = Indexed(200) // hot pink
+	Salmon         = Indexed(203) // salmon
+	DeepPink       = Indexed(205) // deep pink
+	Orange         = Indexed(214) // orange
+	DimGray        = Indexed(240) // dim gray (axes, ticks)
+	WhiteSmoke     = Indexed(255) // near-white
+)
+
+// Indexed creates a Color from a 256-color terminal index. Indices 0-15
+// map to the standard ANSI colors; 16-231 are a 6×6×6 RGB cube; 232-255
+// are a grayscale ramp. Prefer the named color variables when available.
 func Indexed(i int) Color {
 	if i < 0 {
 		i = 0
@@ -61,10 +90,13 @@ func Indexed(i int) Color {
 	return Color{kind: colorIndexed, idx: uint8(i)}
 }
 
+// RGB creates a 24-bit truecolor value. The terminal must support
+// LevelTrue for exact rendering; otherwise the color is approximated.
 func RGB(r, g, b uint8) Color {
 	return Color{kind: colorRGB, r: r, g: g, b: b}
 }
 
+// IsZero reports whether c is the zero value (no color assigned).
 func (c Color) IsZero() bool { return c.kind == colorNone }
 
 // RGB resolves the color to concrete red/green/blue components so host
@@ -83,22 +115,30 @@ func (c Color) RGB() (r, g, b int, ok bool) {
 }
 
 var defaultPalette = []Color{
-	Indexed(39), Indexed(205), Indexed(214), Indexed(114),
-	Indexed(141), Indexed(203), Indexed(75), Indexed(156),
-	Indexed(179), Indexed(44),
+	DodgerBlue, DeepPink, Orange, PaleGreen,
+	MediumPurple, Salmon, SkyBlue, LightGreen,
+	Khaki, CornflowerBlue,
 }
 
+// Style holds foreground color, background color, and bold flag for a
+// single cell or run of text.
 type Style struct {
 	Fg   Color
 	Bg   Color
 	Bold bool
 }
 
+// S creates a Style with the given foreground color.
 func S(fg Color) Style { return Style{Fg: fg} }
 
-func (s Style) On(bg Color) Style     { s.Bg = bg; return s }
+// On returns a copy of s with the background set to bg.
+func (s Style) On(bg Color) Style { s.Bg = bg; return s }
+
+// WithFg returns a copy of s with the foreground set to fg.
 func (s Style) WithFg(fg Color) Style { s.Fg = fg; return s }
-func (s Style) Bolder() Style         { s.Bold = true; return s }
+
+// Bolder returns a copy of s with bold enabled.
+func (s Style) Bolder() Style { s.Bold = true; return s }
 
 func (s Style) isZero() bool {
 	return !s.Bold && s.Fg.IsZero() && s.Bg.IsZero()

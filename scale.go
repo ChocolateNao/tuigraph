@@ -6,13 +6,17 @@ import (
 	"strings"
 )
 
+// Kind identifies the interpolation method of a Scale.
 type Kind uint8
 
 const (
+	// Linear is a uniform scale from Min to Max.
 	Linear Kind = iota
+	// Logarithmic is a base-10 logarithmic scale.
 	Logarithmic
 )
 
+// Scale maps a numeric range [Min, Max] to [0, 1] using the chosen Kind.
 type Scale struct {
 	Kind Kind
 	Min  float64
@@ -64,6 +68,7 @@ func fixedScale(kind Kind, lo, hi float64) Scale {
 	return Scale{Kind: kind, Min: lo, Max: hi}
 }
 
+// Map normalises v to the range [0, 1] according to the scale kind.
 func (s Scale) Map(v float64) float64 {
 	if s.Kind == Logarithmic {
 		min := s.Min
@@ -81,6 +86,8 @@ func (s Scale) Map(v float64) float64 {
 	return (v - s.Min) / (s.Max - s.Min)
 }
 
+// Ticks returns evenly-spaced tick marks suitable for the scale's range.
+// target is the approximate number of ticks desired.
 func (s Scale) Ticks(target int) []Tick {
 	if target < 2 {
 		target = 2
@@ -91,6 +98,7 @@ func (s Scale) Ticks(target int) []Tick {
 	return niceTicks(s.Min, s.Max, target)
 }
 
+// Tick represents a single axis tick with a numeric value and its label.
 type Tick struct {
 	Label string
 	Value float64
@@ -203,6 +211,8 @@ func fmtSci(v float64) string {
 	return strings.TrimRight(strings.TrimRight(s, "0"), ".")
 }
 
+// FormatValue formats v as a human-readable string, using scientific
+// notation for very large or very small values.
 func FormatValue(v float64) string {
 	a := math.Abs(v)
 	if a >= 1e6 || (a > 0 && a < 1e-4) {

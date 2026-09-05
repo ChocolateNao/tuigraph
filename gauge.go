@@ -34,6 +34,7 @@ type Gauge struct {
 	showPct bool
 }
 
+// NewGauge creates a Gauge that displays value as a fraction of max.
 func NewGauge(value, max float64) *Gauge {
 	return &Gauge{
 		chartBase: newChartBase(),
@@ -64,6 +65,7 @@ func (g *Gauge) Color(c Color) *Gauge { g.color = c; return g }
 // ShowPercent toggles the numeric percentage suffix (default on).
 func (g *Gauge) ShowPercent(on bool) *Gauge { g.showPct = on; return g }
 
+// HeightHint returns the suggested height in rows for the given width.
 func (g *Gauge) HeightHint(width int) int {
 	if h := g.chartBase.HeightHint(width); h > 0 {
 		return h
@@ -74,6 +76,7 @@ func (g *Gauge) HeightHint(width int) int {
 	return 1
 }
 
+// Draw renders the gauge bar into the canvas area.
 func (g *Gauge) Draw(rc *Ctx, cv *Canvas) {
 	inner := g.frameTitle(cv, rc.Info.Unicode)
 	if inner.W < 3 || inner.H < 1 {
@@ -147,7 +150,7 @@ func (g *Gauge) drawBar(cv *Canvas, row, x, w int, frac float64, st Style, uni b
 				case i == full-1:
 					cv.Set(x+i, row, tip, st.Bolder())
 				default:
-					cv.Set(x+i, row, track, S(Indexed(240)))
+					cv.Set(x+i, row, track, S(DimGray))
 				}
 			}
 		} else {

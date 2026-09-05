@@ -2,10 +2,16 @@ package tuichart
 
 import "strings"
 
+// Rect represents a rectangular region on the canvas.
 type Rect struct{ X, Y, W, H int }
 
+// X2 returns the rightmost X coordinate (X + W - 1).
 func (r Rect) X2() int { return r.X + r.W - 1 }
+
+// Y2 returns the bottommost Y coordinate (Y + H - 1).
 func (r Rect) Y2() int { return r.Y + r.H - 1 }
+
+// Contains reports whether the point (x, y) lies inside the rectangle.
 func (r Rect) Contains(x, y int) bool {
 	return x >= r.X && x < r.X+r.W && y >= r.Y && y < r.Y+r.H
 }
@@ -23,6 +29,7 @@ func (c cell) blank() bool {
 	return c.ch == ' ' && c.fg.IsZero() && c.bg.IsZero() && !c.bold
 }
 
+// Canvas is a 2-D cell buffer used for drawing text and graphics.
 type Canvas struct {
 	buf    []cell
 	w      int
@@ -32,6 +39,7 @@ type Canvas struct {
 	oy     int
 }
 
+// NewCanvas creates a blank canvas of the given width and height.
 func NewCanvas(w, h int) *Canvas {
 	if w < 1 {
 		w = 1
@@ -44,16 +52,23 @@ func NewCanvas(w, h int) *Canvas {
 	return c
 }
 
+// Clear resets every cell in the canvas to a blank space.
 func (c *Canvas) Clear() {
 	for i := range c.buf {
 		c.buf[i] = blankCell
 	}
 }
 
-func (c *Canvas) Width() int  { return c.w }
-func (c *Canvas) Height() int { return c.h }
-func (c *Canvas) Rect() Rect  { return Rect{X: 0, Y: 0, W: c.w, H: c.h} }
+// Width returns the canvas width in cells.
+func (c *Canvas) Width() int { return c.w }
 
+// Height returns the canvas height in cells.
+func (c *Canvas) Height() int { return c.h }
+
+// Rect returns the bounding rectangle of the canvas.
+func (c *Canvas) Rect() Rect { return Rect{X: 0, Y: 0, W: c.w, H: c.h} }
+
+// Set writes a single cell at position (x, y) with the given rune and style.
 func (c *Canvas) Set(x, y int, ch rune, st Style) {
 	if x < 0 || y < 0 || x >= c.w || y >= c.h {
 		return
@@ -70,6 +85,8 @@ func (c *Canvas) Set(x, y int, ch rune, st Style) {
 	cell.bold = st.Bold
 }
 
+// At returns the internal cell at position (x, y), or a blank cell if
+// out of bounds.
 func (c *Canvas) At(x, y int) cell {
 	if x < 0 || y < 0 || x >= c.w || y >= c.h {
 		return blankCell
@@ -103,6 +120,8 @@ func (c *Canvas) EachCell(fn func(x, y int, cl Cell)) {
 	}
 }
 
+// Text draws the string s starting at position (x, y) and returns the
+// number of cells written.
 func (c *Canvas) Text(x, y int, s string, st Style) int {
 	cx := x
 	for _, r := range s {
@@ -115,6 +134,7 @@ func (c *Canvas) Text(x, y int, s string, st Style) int {
 	return cx - x
 }
 
+// TextCenter draws the string s horizontally centered on column cx at row y.
 func (c *Canvas) TextCenter(cx, y int, s string, st Style) int {
 	n := runeLen(s)
 	x := cx - n/2
@@ -124,6 +144,7 @@ func (c *Canvas) TextCenter(cx, y int, s string, st Style) int {
 	return c.Text(x, y, s, st)
 }
 
+// TextRight draws the string s right-aligned so that it ends at column x2.
 func (c *Canvas) TextRight(x2, y int, s string, st Style) int {
 	x := x2 - runeLen(s) + 1
 	if x < 0 {
@@ -133,6 +154,7 @@ func (c *Canvas) TextRight(x2, y int, s string, st Style) int {
 	return c.Text(x, y, s, st)
 }
 
+// FillRect fills the rectangle r with the given rune and style.
 func (c *Canvas) FillRect(r Rect, ch rune, st Style) {
 	for y := r.Y; y < r.Y+r.H; y++ {
 		for x := r.X; x < r.X+r.W; x++ {
@@ -141,6 +163,7 @@ func (c *Canvas) FillRect(r Rect, ch rune, st Style) {
 	}
 }
 
+// HLine draws a horizontal line from (x1, y) to (x2, y).
 func (c *Canvas) HLine(y, x1, x2 int, ch rune, st Style) {
 	if x1 > x2 {
 		x1, x2 = x2, x1
@@ -150,6 +173,7 @@ func (c *Canvas) HLine(y, x1, x2 int, ch rune, st Style) {
 	}
 }
 
+// VLine draws a vertical line from (x, y1) to (x, y2).
 func (c *Canvas) VLine(x, y1, y2 int, ch rune, st Style) {
 	if y1 > y2 {
 		y1, y2 = y2, y1
@@ -166,6 +190,7 @@ func boxRunes(unicode bool) (lt, rt, lb, rb, hz, vt rune) {
 	return '+', '+', '+', '+', '-', '|'
 }
 
+// Border draws a single-line box around the entire canvas.
 func (c *Canvas) Border(st Style, unicode bool) {
 	lt, rt, lb, rb, hz, vt := boxRunes(unicode)
 	x2, y2 := c.w-1, c.h-1
@@ -179,6 +204,8 @@ func (c *Canvas) Border(st Style, unicode bool) {
 	c.VLine(x2, 1, y2-1, vt, st)
 }
 
+// Sub returns a view of the canvas clipped to rectangle r, sharing the
+// same underlying buffer.
 func (c *Canvas) Sub(r Rect) *Canvas {
 	if r.W < 0 {
 		r.W = 0
@@ -195,6 +222,7 @@ func (c *Canvas) Sub(r Rect) *Canvas {
 	}
 }
 
+// Blit copies non-blank cells from src onto this canvas at offset (ox, oy).
 func (c *Canvas) Blit(src *Canvas, ox, oy int) {
 	for y := 0; y < src.h; y++ {
 		for x := 0; x < src.w; x++ {
@@ -217,6 +245,8 @@ func (c *Canvas) Plain() string {
 	return c.Render(LevelNone)
 }
 
+// Render produces the canvas as a string using ANSI escape sequences
+// appropriate for the given color level.
 func (c *Canvas) Render(lvl Level) string {
 	var b strings.Builder
 	for y := 0; y < c.h; y++ {

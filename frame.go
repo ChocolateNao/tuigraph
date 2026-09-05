@@ -121,7 +121,7 @@ func prepareFrame(cv *Canvas, rc *Ctx, b *chartBase, db dataBounds, xk, yk Kind,
 		H: inner.H - top - bottom,
 	}
 
-	dim := S(Indexed(240))
+	dim := S(DimGray)
 	gridCh := '·'
 	if !uni {
 		gridCh = '.'

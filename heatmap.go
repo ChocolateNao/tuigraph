@@ -2,6 +2,8 @@ package tuichart
 
 import "math"
 
+// Heatmap renders a two-dimensional grid of values as colored cells with
+// a gradient from low to high, row and column labels, and a color bar.
 type Heatmap struct {
 	grid      [][]float64
 	rowLabels []string
@@ -11,20 +13,26 @@ type Heatmap struct {
 	high Color
 }
 
+// NewHeat creates a Heatmap from a two-dimensional grid of values.
 func NewHeat(grid [][]float64) *Heatmap {
 	return &Heatmap{
 		chartBase: newChartBase(),
 		grid:      grid,
-		low:       Indexed(21),
-		high:      Indexed(196),
+		low:       Azure,
+		high:      BrightRed,
 	}
 }
 
 // Title sets the chart title.
 func (h *Heatmap) Title(t string) *Heatmap { h.SetTitle(t); return h }
 
+// Colors sets the low and high gradient endpoint colors.
 func (h *Heatmap) Colors(low, high Color) *Heatmap { h.low, h.high = low, high; return h }
+
+// RowLabels sets the labels displayed to the left of each row.
 func (h *Heatmap) RowLabels(ls ...string) *Heatmap { h.rowLabels = ls; return h }
+
+// ColLabels sets the labels displayed above each column.
 func (h *Heatmap) ColLabels(ls ...string) *Heatmap { h.colLabels = ls; return h }
 
 // CellWidth fixes each cell's width in columns instead of stretching cells
@@ -35,6 +43,7 @@ func (h *Heatmap) CellWidth(n int) *Heatmap { h.SetCellWidth(n); return h }
 // ShowValues prints the numeric value inside each cell (when it fits).
 func (h *Heatmap) ShowValues(v bool) *Heatmap { h.SetShowValues(v); return h }
 
+// HeightHint returns the suggested height in rows for the given width.
 func (h *Heatmap) HeightHint(width int) int {
 	if h := h.chartBase.HeightHint(width); h > 0 {
 		return h
@@ -55,6 +64,7 @@ func (h *Heatmap) HeightHint(width int) int {
 
 var heatRampASCII = []rune{' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'}
 
+// Draw renders the heatmap grid, labels, and color bar into the canvas.
 func (h *Heatmap) Draw(rc *Ctx, cv *Canvas) {
 	inner := h.frameTitle(cv, rc.Info.Unicode)
 	uni := rc.Info.Unicode

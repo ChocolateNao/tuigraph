@@ -8,12 +8,14 @@ type pieSlice struct {
 	color Color
 }
 
+// PieChart renders slices as a pie (or donut) chart with a legend.
 type PieChart struct {
 	slices []pieSlice
 	chartBase
 	donut bool
 }
 
+// NewPie creates an empty PieChart.
 func NewPie() *PieChart {
 	return &PieChart{chartBase: newChartBase(), donut: false}
 }
@@ -24,6 +26,7 @@ func (p *PieChart) Slice(name string, val float64) *PieChart {
 	return p
 }
 
+// SliceColor overrides the color of the most recently added slice.
 func (p *PieChart) SliceColor(c Color) *PieChart {
 	if len(p.slices) > 0 {
 		p.slices[len(p.slices)-1].color = c
@@ -31,6 +34,7 @@ func (p *PieChart) SliceColor(c Color) *PieChart {
 	return p
 }
 
+// Donut enables the donut style (hollow center) when on is true.
 func (p *PieChart) Donut(on bool) *PieChart { p.donut = on; return p }
 
 // ShowValues includes each slice's raw value in the legend next to its
@@ -40,6 +44,7 @@ func (p *PieChart) ShowValues(v bool) *PieChart { p.SetShowValues(v); return p }
 // Title sets the chart title.
 func (p *PieChart) Title(t string) *PieChart { p.SetTitle(t); return p }
 
+// HeightHint returns the suggested height in rows for the given width.
 func (p *PieChart) HeightHint(width int) int {
 	if h := p.chartBase.HeightHint(width); h > 0 {
 		return h
@@ -56,6 +61,7 @@ func (p *PieChart) HeightHint(width int) int {
 
 var pieASCIIChars = []rune{'#', '@', '*', 'o', '=', '+', '~', '%'}
 
+// Draw renders the pie sectors and legend into the canvas.
 func (p *PieChart) Draw(rc *Ctx, cv *Canvas) {
 	total := 0.0
 	ci := 0

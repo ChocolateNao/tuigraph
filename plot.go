@@ -2,8 +2,10 @@ package tuichart
 
 import "math"
 
+// Point is a single data point with X and Y coordinates.
 type Point struct{ X, Y float64 }
 
+// Seq creates a sequence of Points with X = 0, 1, 2, ... and the given y values.
 func Seq(vals ...float64) []Point {
 	out := make([]Point, len(vals))
 	for i, v := range vals {
@@ -12,10 +14,12 @@ func Seq(vals ...float64) []Point {
 	return out
 }
 
+// Zip combines separate x and y slices into Points, truncating to the shorter length.
 func Zip(xs, ys []float64) []Point {
 	n := minInt(len(xs), len(ys))
 	out := make([]Point, 0, n)
 	for i := 0; i < n; i++ {
+		//nolint:gosec // bounded by n = min(len(xs), len(ys))
 		out = append(out, Point{X: xs[i], Y: ys[i]})
 	}
 	return out
@@ -31,6 +35,7 @@ type seriesI interface {
 	legendEntry(st Style, uni bool) LegendEntry
 }
 
+// Line is a series rendered as connected line segments.
 type Line struct {
 	name   string
 	pts    []Point
@@ -39,24 +44,37 @@ type Line struct {
 	dashed bool
 }
 
+// NewLine creates a named Line series from the given points.
 func NewLine(name string, pts ...Point) *Line {
 	return &Line{name: name, pts: pts}
 }
 
+// NewLineVals creates a named Line series from y values, assigning X = 0, 1, 2, ...
 func NewLineVals(name string, vals []float64) *Line {
 	return &Line{name: name, pts: Seq(vals...)}
 }
 
-func (l *Line) Points(pts ...Point) *Line    { l.pts = append(l.pts, pts...); return l }
+// Points appends one or more Points to the line.
+func (l *Line) Points(pts ...Point) *Line { l.pts = append(l.pts, pts...); return l }
+
+// Values appends y values (with sequential X) to the line.
 func (l *Line) Values(vals ...float64) *Line { l.pts = append(l.pts, Seq(vals...)...); return l }
 
 // SetValues replaces all points with the given y values at x = 0..n-1.
 // Intended for live charts: assign Ring.Values() on every tick.
 func (l *Line) SetValues(vals []float64) *Line { l.pts = Seq(vals...); return l }
-func (l *Line) Color(c Color) *Line            { l.color = c; return l }
-func (l *Line) Marker(m rune) *Line            { l.marker = m; return l }
-func (l *Line) Dashed(d bool) *Line            { l.dashed = d; return l }
-func (l *Line) SetName(s string) *Line         { l.name = s; return l }
+
+// Color sets the line color.
+func (l *Line) Color(c Color) *Line { l.color = c; return l }
+
+// Marker sets a glyph rendered at each data point.
+func (l *Line) Marker(m rune) *Line { l.marker = m; return l }
+
+// Dashed toggles a dashed line style instead of a solid line.
+func (l *Line) Dashed(d bool) *Line { l.dashed = d; return l }
+
+// SetName changes the series legend label.
+func (l *Line) SetName(s string) *Line { l.name = s; return l }
 
 func (l *Line) seriesName() string { return l.name }
 
@@ -145,6 +163,7 @@ func (l *Line) legendEntry(st Style, uni bool) LegendEntry {
 	return LegendEntry{Label: l.name, Style: st, Glyph: glyph}
 }
 
+// Scatter is a series rendered as discrete point markers.
 type Scatter struct {
 	name   string
 	pts    []Point
@@ -152,18 +171,27 @@ type Scatter struct {
 	marker rune
 }
 
+// NewScatter creates a named Scatter series from the given points.
 func NewScatter(name string, pts ...Point) *Scatter {
 	return &Scatter{name: name, pts: pts}
 }
 
+// NewScatterVals creates a named Scatter series from y values, assigning X = 0, 1, 2, ...
 func NewScatterVals(name string, vals []float64) *Scatter {
 	return &Scatter{name: name, pts: Seq(vals...)}
 }
 
+// Points appends one or more Points to the scatter series.
 func (s *Scatter) Points(pts ...Point) *Scatter { s.pts = append(s.pts, pts...); return s }
-func (s *Scatter) Color(c Color) *Scatter       { s.color = c; return s }
-func (s *Scatter) Marker(m rune) *Scatter       { s.marker = m; return s }
-func (s *Scatter) SetName(n string) *Scatter    { s.name = n; return s }
+
+// Color sets the marker color.
+func (s *Scatter) Color(c Color) *Scatter { s.color = c; return s }
+
+// Marker sets the glyph used to render each data point.
+func (s *Scatter) Marker(m rune) *Scatter { s.marker = m; return s }
+
+// SetName changes the series legend label.
+func (s *Scatter) SetName(n string) *Scatter { s.name = n; return s }
 
 func (s *Scatter) seriesName() string { return s.name }
 func (s *Scatter) bounds(db *dataBounds) {
@@ -208,6 +236,7 @@ func (s *Scatter) legendEntry(st Style, uni bool) LegendEntry {
 	return LegendEntry{Label: s.name, Style: st, Glyph: glyph}
 }
 
+// Plot is an XY chart containing line and scatter series.
 type Plot struct {
 	order []seriesI
 	chartBase
@@ -215,6 +244,7 @@ type Plot struct {
 	yKind Kind
 }
 
+// NewPlot creates a new Plot.
 func NewPlot() *Plot {
 	return &Plot{chartBase: newChartBase()}
 }
@@ -254,6 +284,7 @@ func (p *Plot) Add(ss ...any) *Plot {
 	return p
 }
 
+// LogX switches the x axis to a logarithmic scale.
 func (p *Plot) LogX(on bool) *Plot {
 	if on {
 		p.xKind = Logarithmic
@@ -263,6 +294,7 @@ func (p *Plot) LogX(on bool) *Plot {
 	return p
 }
 
+// LogY switches the y axis to a logarithmic scale.
 func (p *Plot) LogY(on bool) *Plot {
 	if on {
 		p.yKind = Logarithmic
@@ -272,6 +304,7 @@ func (p *Plot) LogY(on bool) *Plot {
 	return p
 }
 
+// HeightHint returns the suggested height for the given width.
 func (p *Plot) HeightHint(width int) int {
 	if h := p.chartBase.HeightHint(width); h > 0 {
 		return h
@@ -286,6 +319,7 @@ func (p *Plot) HeightHint(width int) int {
 	return h
 }
 
+// Draw renders the plot onto the canvas.
 func (p *Plot) Draw(rc *Ctx, cv *Canvas) {
 	base := &p.chartBase
 	xk, yk := p.xKind, p.yKind

@@ -44,6 +44,7 @@ type Timeline struct {
 	detailColor Color
 }
 
+// NewTimeline creates an empty Timeline.
 func NewTimeline() *Timeline {
 	return &Timeline{chartBase: newChartBase()}
 }
@@ -75,9 +76,14 @@ func (t *Timeline) Color(c Color) *Timeline { t.color = c; return t }
 
 // DetailColor sets the color of event detail lines; default dim gray.
 func (t *Timeline) DetailColor(c Color) *Timeline { t.detailColor = c; return t }
-func (t *Timeline) SetDetailColor(c Color)        { t.detailColor = c }
-func (t *Timeline) ResetDetailColor()             { t.detailColor = Color{} }
 
+// SetDetailColor sets the color of event detail lines; default dim gray.
+func (t *Timeline) SetDetailColor(c Color) { t.detailColor = c }
+
+// ResetDetailColor restores the default detail line color.
+func (t *Timeline) ResetDetailColor() { t.detailColor = Color{} }
+
+// HeightHint returns the suggested height in rows for the given width.
 func (t *Timeline) HeightHint(width int) int {
 	if h := t.chartBase.HeightHint(width); h > 0 {
 		return h
@@ -97,6 +103,7 @@ func (t *Timeline) HeightHint(width int) int {
 	return h
 }
 
+// Draw renders the time axis, event markers, and labels into the canvas.
 func (t *Timeline) Draw(rc *Ctx, cv *Canvas) {
 	inner := t.frameTitle(cv, rc.Info.Unicode)
 	if len(t.events) == 0 || inner.W < 8 || inner.H < 3 {
@@ -136,7 +143,7 @@ func (t *Timeline) Draw(rc *Ctx, cv *Canvas) {
 	}
 	axisRow := inner.Y + inner.H/2
 
-	dim := S(Indexed(240))
+	dim := S(DimGray)
 	cv.HLine(axisRow, inner.X, inner.X2(), lineCh, dim)
 
 	mapCol := func(u float64) int {
@@ -173,7 +180,7 @@ func (t *Timeline) Draw(rc *Ctx, cv *Canvas) {
 
 	detailSt := S(t.detailColor)
 	if t.detailColor.IsZero() {
-		detailSt = S(Indexed(240)) // dim gray
+		detailSt = S(DimGray)
 	}
 
 	occ := newCellOcc()

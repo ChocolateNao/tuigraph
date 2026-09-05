@@ -8,10 +8,13 @@ import (
 )
 
 const (
-	DefaultWidth  = 80
+	// DefaultWidth is the assumed terminal width when TTY size detection fails.
+	DefaultWidth = 80
+	// DefaultHeight is the assumed terminal height when TTY size detection fails.
 	DefaultHeight = 24
 )
 
+// Info holds the detected terminal capabilities.
 type Info struct {
 	W, H    int
 	Level   Level
@@ -25,12 +28,14 @@ var (
 	cachedEnvLvl    = Level(-1)
 )
 
+// SetProfile forces all future Detect calls to use the given color level.
 func SetProfile(l Level) {
 	detectMu.Lock()
 	profileOverride = l
 	detectMu.Unlock()
 }
 
+// SetUnicode forces all future Detect calls to use the given unicode setting.
 func SetUnicode(on bool) {
 	detectMu.Lock()
 	if on {
@@ -41,6 +46,7 @@ func SetUnicode(on bool) {
 	detectMu.Unlock()
 }
 
+// ResetDetection clears any overrides set by SetProfile or SetUnicode.
 func ResetDetection() {
 	detectMu.Lock()
 	profileOverride = -1
@@ -49,10 +55,16 @@ func ResetDetection() {
 	detectMu.Unlock()
 }
 
+// Detect probes the current terminal (os.Stdout) for size, color level,
+// and unicode support.
 func Detect() Info {
 	return DetectWriter(os.Stdout)
 }
 
+// DetectWriter probes w for terminal size and color capabilities. When w is
+// a TTY file the full detection path is used; otherwise a safe fallback is
+// returned. When no color is supported (LevelNone), unicode is also disabled
+// since dumb terminals typically cannot render multi-byte glyphs.
 func DetectWriter(w io.Writer) Info {
 	detectMu.Lock()
 	defer detectMu.Unlock()
@@ -68,7 +80,11 @@ func DetectWriter(w io.Writer) Info {
 			info.Level = LevelNone
 		}
 	}
-	return applyOverrides(info)
+	info = applyOverrides(info)
+	if info.Level == LevelNone {
+		info.Unicode = false
+	}
+	return info
 }
 
 func applyOverrides(info Info) Info {

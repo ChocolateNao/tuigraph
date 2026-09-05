@@ -28,11 +28,12 @@ type Candlestick struct {
 	down Color
 }
 
+// NewCandlestick creates an empty Candlestick chart with default colors.
 func NewCandlestick() *Candlestick {
 	return &Candlestick{
 		chartBase: newChartBase(),
-		up:        Indexed(2), // green
-		down:      Indexed(1), // red
+		up:        Green,
+		down:      Maroon,
 	}
 }
 
@@ -59,12 +60,13 @@ func (c *Candlestick) DownColor(col Color) *Candlestick { c.down = col; return c
 
 // ResetColors restores the default green/red pair.
 func (c *Candlestick) ResetColors() {
-	c.up, c.down = Indexed(2), Indexed(1)
+	c.up, c.down = Green, Maroon
 }
 
 // Format sets the Go time layout for X tick labels; empty restores auto.
 func (c *Candlestick) Format(layout string) *Candlestick { c.layout = layout; return c }
 
+// HeightHint returns the suggested height in rows for the given width.
 func (c *Candlestick) HeightHint(width int) int {
 	if h := c.chartBase.HeightHint(width); h > 0 {
 		return h
@@ -74,6 +76,7 @@ func (c *Candlestick) HeightHint(width int) int {
 	return p.HeightHint(width)
 }
 
+// Draw renders the OHLC candles and wicks into the canvas.
 func (c *Candlestick) Draw(rc *Ctx, cv *Canvas) {
 	uni := rc.Info.Unicode
 	mono := rc.Info.Level == LevelNone

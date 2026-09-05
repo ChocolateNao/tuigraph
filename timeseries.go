@@ -48,6 +48,7 @@ type TimeSeries struct {
 	chartBase
 }
 
+// NewTimeSeries creates an empty TimeSeries chart.
 func NewTimeSeries() *TimeSeries {
 	return &TimeSeries{chartBase: newChartBase()}
 }
@@ -73,6 +74,7 @@ func (ts *TimeSeries) SetXFormatter(f func(float64) string) { ts.xFmt = f }
 // ResetFormatters restores default tick formatting.
 func (ts *TimeSeries) ResetFormatters() { ts.xFmt, ts.layout = nil, "" }
 
+// HeightHint returns the suggested height in rows for the given width.
 func (ts *TimeSeries) HeightHint(width int) int {
 	if h := ts.chartBase.HeightHint(width); h > 0 {
 		return h
@@ -82,6 +84,7 @@ func (ts *TimeSeries) HeightHint(width int) int {
 	return p.HeightHint(width)
 }
 
+// Draw renders the time-series lines onto an X/Y plot in the canvas.
 func (ts *TimeSeries) Draw(rc *Ctx, cv *Canvas) {
 	p := NewPlot()
 	p.chartBase = ts.chartBase

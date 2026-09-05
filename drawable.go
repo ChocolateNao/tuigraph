@@ -16,6 +16,7 @@ func newCtx(info Info) *Ctx {
 // directly into a Canvas without going through a Chart.
 func NewRenderCtx(info Info) *Ctx { return newCtx(info) }
 
+// Next returns the next unused palette color, cycling when exhausted.
 func (rc *Ctx) Next() Color {
 	c := rc.Palette[rc.next%len(rc.Palette)]
 	rc.next++

@@ -9,8 +9,11 @@ const (
 type Align uint8
 
 const (
+	// AlignLeft places the title at the start of its row.
 	AlignLeft Align = iota
+	// AlignCenter places the title in the middle of its row.
 	AlignCenter
+	// AlignRight places the title at the end of its row.
 	AlignRight
 )
 
@@ -60,18 +63,27 @@ func newChartBase() chartBase {
 	return chartBase{grid: true, frame: true, legend: true, tickN: defaultTickTarget}
 }
 
+// SetTitle sets the diagram's frame title.
 func (b *chartBase) SetTitle(t string) { b.title = t }
-func (b *chartBase) ResetTitle()       { b.title = "" }
+
+// ResetTitle clears the diagram's frame title.
+func (b *chartBase) ResetTitle() { b.title = "" }
 
 // SetShowValues toggles numeric value annotations (bar tops, heatmap
 // cells, pie legend values).
 func (b *chartBase) SetShowValues(v bool) { b.showVals = v }
-func (b *chartBase) ResetShowValues()     { b.showVals = false }
+
+// ResetShowValues disables numeric value annotations.
+func (b *chartBase) ResetShowValues() { b.showVals = false }
 
 // SetCellWidth fixes the heatmap cell width in columns; 0 restores the
 // automatic stretch that fills the frame width.
-func (b *chartBase) SetCellWidth(n int)    { b.cellW = n }
-func (b *chartBase) ResetCellWidth()       { b.cellW = 0 }
+func (b *chartBase) SetCellWidth(n int) { b.cellW = n }
+
+// ResetCellWidth restores automatic heatmap cell width.
+func (b *chartBase) ResetCellWidth() { b.cellW = 0 }
+
+// SetTitleAlign sets where the diagram title sits within its frame.
 func (b *chartBase) SetTitleAlign(a Align) { b.titleAlign = a }
 
 // ResetTitleAlign restores left alignment.
@@ -82,18 +94,34 @@ func (b *chartBase) ResetTitleAlign() { b.titleAlign = AlignLeft }
 func (b *chartBase) SetOrientation(o Orientation) { b.orient = o }
 
 // ResetOrientation restores each diagram's default axis layout.
-func (b *chartBase) ResetOrientation()  { b.orient = OrientAuto }
+func (b *chartBase) ResetOrientation() { b.orient = OrientAuto }
+
+// SetXLabel sets the label text displayed below the X axis.
 func (b *chartBase) SetXLabel(l string) { b.xLabel = l }
+
+// SetYLabel sets the label text displayed beside the Y axis.
 func (b *chartBase) SetYLabel(l string) { b.yLabel = l }
-func (b *chartBase) ResetLabels()       { b.xLabel, b.yLabel = "", "" }
 
+// ResetLabels clears both axis labels.
+func (b *chartBase) ResetLabels() { b.xLabel, b.yLabel = "", "" }
+
+// SetXTicks overrides the auto-generated X-axis ticks with explicit values.
 func (b *chartBase) SetXTicks(t []Tick) { b.xTicks = t }
-func (b *chartBase) SetYTicks(t []Tick) { b.yTicks = t }
-func (b *chartBase) ResetTicks()        { b.xTicks, b.yTicks = nil, nil }
 
+// SetYTicks overrides the auto-generated Y-axis ticks with explicit values.
+func (b *chartBase) SetYTicks(t []Tick) { b.yTicks = t }
+
+// ResetTicks clears custom ticks, restoring auto-generation.
+func (b *chartBase) ResetTicks() { b.xTicks, b.yTicks = nil, nil }
+
+// SetXFormatter provides a custom formatter for X-axis tick labels.
 func (b *chartBase) SetXFormatter(f func(float64) string) { b.xFmt = f }
+
+// SetYFormatter provides a custom formatter for Y-axis tick labels.
 func (b *chartBase) SetYFormatter(f func(float64) string) { b.yFmt = f }
-func (b *chartBase) ResetFormatters()                     { b.xFmt, b.yFmt = nil, nil }
+
+// ResetFormatters clears custom formatters, restoring default formatting.
+func (b *chartBase) ResetFormatters() { b.xFmt, b.yFmt = nil, nil }
 
 // SetScale fixes both axis ranges, disabling auto-scaling.
 func (b *chartBase) SetScale(x0, x1, y0, y1 float64) {
@@ -101,7 +129,10 @@ func (b *chartBase) SetScale(x0, x1, y0, y1 float64) {
 	b.xSet, b.ySet = true, true
 }
 
+// SetXRange fixes the X axis range, disabling auto-scaling on that axis.
 func (b *chartBase) SetXRange(lo, hi float64) { b.x0, b.x1, b.xSet = lo, hi, true }
+
+// SetYRange fixes the Y axis range, disabling auto-scaling on that axis.
 func (b *chartBase) SetYRange(lo, hi float64) { b.y0, b.y1, b.ySet = lo, hi, true }
 
 // ResetScale re-enables automatic scaling from data.
@@ -112,7 +143,11 @@ func (b *chartBase) ResetScale() {
 
 // SetSize pins this diagram's height in rows when rendered in a Chart.
 func (b *chartBase) SetSize(rows int) { b.height = rows }
-func (b *chartBase) ResetSize()       { b.height = 0 }
+
+// ResetSize clears the pinned height, letting the Chart container decide.
+func (b *chartBase) ResetSize() { b.height = 0 }
+
+// HeightHint returns the pinned height or 0 to let the container decide.
 func (b *chartBase) HeightHint(int) int {
 	if b.height > 0 {
 		return b.height
@@ -120,9 +155,16 @@ func (b *chartBase) HeightHint(int) int {
 	return 0
 }
 
-func (b *chartBase) SetGrid(on bool)   { b.grid = on }
+// SetGrid enables or disables the background grid lines.
+func (b *chartBase) SetGrid(on bool) { b.grid = on }
+
+// SetBorder enables or disables the frame border around the diagram.
 func (b *chartBase) SetBorder(on bool) { b.frame = on }
+
+// SetLegend enables or disables the legend box.
 func (b *chartBase) SetLegend(on bool) { b.legend = on }
+
+// SetTickCount sets the target number of ticks per axis; minimum is 2.
 func (b *chartBase) SetTickCount(n int) {
 	if n < 2 {
 		n = 2

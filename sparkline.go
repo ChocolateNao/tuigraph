@@ -10,12 +10,15 @@ var (
 	sparkASCII  = []rune{'_', '.', '-', '=', '+', '*', '#', '%', '@'}
 )
 
+// Sparkline renders a compact one-row line of block characters representing
+// a sequence of values — useful for inline or embedded mini-charts.
 type Sparkline struct {
 	vals []float64
 	chartBase
 	color Color
 }
 
+// NewSpark creates a Sparkline with the given initial values.
 func NewSpark(vals ...float64) *Sparkline {
 	return &Sparkline{chartBase: newChartBase(), vals: vals}
 }
@@ -24,14 +27,24 @@ func NewSpark(vals ...float64) *Sparkline {
 // sparkline when placed in a Chart row by itself only if height allows.
 func (s *Sparkline) Title(t string) *Sparkline { s.SetTitle(t); return s }
 
+// Values appends additional data points to the sparkline.
 func (s *Sparkline) Values(
 	vals ...float64,
 ) *Sparkline {
 	s.vals = append(s.vals, vals...)
 	return s
 }
+
+// SetValues replaces all data points in the sparkline.
+func (s *Sparkline) SetValues(vals []float64) *Sparkline {
+	s.vals = vals
+	return s
+}
+
+// Color sets the sparkline fill color; defaults to SkyBlue.
 func (s *Sparkline) Color(c Color) *Sparkline { s.color = c; return s }
 
+// HeightHint returns the suggested height in rows (1, or 2 with a title).
 func (s *Sparkline) HeightHint(int) int {
 	if s.title != "" {
 		return 2
@@ -39,6 +52,7 @@ func (s *Sparkline) HeightHint(int) int {
 	return 1
 }
 
+// Draw renders the sparkline into the canvas.
 func (s *Sparkline) Draw(rc *Ctx, cv *Canvas) {
 	row := cv.Height() - 1
 	if s.title != "" && cv.Height() >= 2 {
@@ -75,7 +89,7 @@ func renderSpark(vals []float64, uni bool, c Color, rc *Ctx) []sparkRune {
 	}
 	col := c
 	if col.IsZero() && rc != nil {
-		col = Indexed(75)
+		col = SkyBlue
 	}
 	for i := 0; i < n; i++ {
 		v := vals[i]
@@ -98,7 +112,7 @@ func renderSpark(vals []float64, uni bool, c Color, rc *Ctx) []sparkRune {
 // Spark renders values as a one-line sparkline using the current terminal profile.
 func Spark(vals []float64) string {
 	rc := newCtx(Detect())
-	runes := renderSpark(vals, rc.Info.Unicode, Indexed(75), rc)
+	runes := renderSpark(vals, rc.Info.Unicode, SkyBlue, rc)
 	var b strings.Builder
 	cur := Style{}
 	active := false

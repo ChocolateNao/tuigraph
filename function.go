@@ -2,6 +2,7 @@ package tuichart
 
 import "math"
 
+// FunctionPlot renders a mathematical function y = f(x) over a domain.
 type FunctionPlot struct {
 	fn   func(float64) float64
 	name string
@@ -14,6 +15,7 @@ type FunctionPlot struct {
 	yKind     Kind
 }
 
+// NewFunction creates a function plot with default domain [-10, 10].
 func NewFunction(f func(float64) float64) *FunctionPlot {
 	return &FunctionPlot{
 		chartBase: newChartBase(),
@@ -33,11 +35,13 @@ func (p *FunctionPlot) Domain(lo, hi float64) *FunctionPlot {
 	return p
 }
 
+// ResetDomain restores the default x range of [-10, 10].
 func (p *FunctionPlot) ResetDomain() *FunctionPlot {
 	p.lo, p.hi, p.domainSet = -10, 10, false
 	return p
 }
 
+// Samples sets the number of evaluation points; must be greater than 8.
 func (p *FunctionPlot) Samples(n int) *FunctionPlot {
 	if n > 8 {
 		p.samples = n
@@ -45,7 +49,10 @@ func (p *FunctionPlot) Samples(n int) *FunctionPlot {
 	return p
 }
 
+// Name sets the legend label for the function.
 func (p *FunctionPlot) Name(s string) *FunctionPlot { p.name = s; return p }
+
+// Color sets the plot line color.
 func (p *FunctionPlot) Color(c Color) *FunctionPlot { p.color = c; return p }
 
 // LogY switches the y axis to a logarithmic scale.
@@ -83,6 +90,7 @@ func (p *FunctionPlot) sample(width int) [][]Point {
 	return segs
 }
 
+// HeightHint returns the suggested height for the given width.
 func (p *FunctionPlot) HeightHint(width int) int {
 	if h := p.chartBase.HeightHint(width); h > 0 {
 		return h
@@ -97,6 +105,7 @@ func (p *FunctionPlot) HeightHint(width int) int {
 	return h
 }
 
+// Draw renders the function plot onto the canvas.
 func (p *FunctionPlot) Draw(rc *Ctx, cv *Canvas) {
 	segs := p.sample(cv.Width())
 	color := p.color
@@ -132,6 +141,7 @@ func (p *FunctionPlot) Draw(rc *Ctx, cv *Canvas) {
 	}}, fr.uni)
 }
 
+// NaN returns a not-a-number float64 for use as a gap marker in plots.
 func NaN() float64 { return math.NaN() }
 
 func tern(cond bool, a, b string) string {

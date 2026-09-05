@@ -20,6 +20,7 @@ type Options struct {
 // Option mutates Chart options.
 type Option func(*Options)
 
+// WithWidth overrides the detected terminal width with a fixed column count.
 func WithWidth(w int) Option {
 	return func(o *Options) {
 		if w > 0 {
@@ -27,7 +28,11 @@ func WithWidth(w int) Option {
 		}
 	}
 }
-func WithGap(rows int) Option        { return func(o *Options) { o.gap = rows } }
+
+// WithGap sets the number of blank rows between diagram rows.
+func WithGap(rows int) Option { return func(o *Options) { o.gap = rows } }
+
+// WithPalette replaces the default color palette with the provided colors.
 func WithPalette(cs ...Color) Option { return func(o *Options) { o.palette = cs } }
 
 // WithDiagramHeight sets the default height in rows for diagrams that do not
@@ -40,6 +45,8 @@ func WithDiagramHeight(rows int) Option {
 	}
 }
 
+// WithUnicode overrides automatic unicode detection: true forces braille
+// and box-drawing glyphs, false forces pure ASCII.
 func WithUnicode(on bool) Option {
 	return func(o *Options) {
 		if on {
@@ -50,13 +57,21 @@ func WithUnicode(on bool) Option {
 	}
 }
 
+// WithProfile overrides automatic color-level detection with a fixed Level.
 func WithProfile(l Level) Option {
 	return func(o *Options) { o.levelOverride, o.hasLevel = l, true }
 }
 
-func WithNoColor() Option   { return WithProfile(LevelNone) }
-func WithColor16() Option   { return WithProfile(Level16) }
-func WithColor256() Option  { return WithProfile(Level256) }
+// WithNoColor forces monochrome output with no ANSI escape sequences.
+func WithNoColor() Option { return WithProfile(LevelNone) }
+
+// WithColor16 forces 16-color ANSI output.
+func WithColor16() Option { return WithProfile(Level16) }
+
+// WithColor256 forces 256-color ANSI output.
+func WithColor256() Option { return WithProfile(Level256) }
+
+// WithTrueColor forces 24-bit truecolor ANSI output.
 func WithTrueColor() Option { return WithProfile(LevelTrue) }
 
 func (o *Options) apply(info Info) Info {
@@ -90,6 +105,7 @@ func New(opts ...Option) *Chart {
 	return c
 }
 
+// Title sets the container title rendered above all diagrams.
 func (c *Chart) Title(t string) *Chart { c.title = t; return c }
 
 // TitleAlign sets where the container title sits: AlignLeft, AlignCenter
@@ -111,7 +127,10 @@ func (c *Chart) Row(ds ...Drawable) *Chart {
 	return c
 }
 
+// Clear removes all diagrams and the title from the chart.
 func (c *Chart) Clear() *Chart { c.rows = nil; return c }
+
+// Len returns the total number of diagrams across all rows.
 func (c *Chart) Len() int {
 	n := 0
 	for _, r := range c.rows {

@@ -7,12 +7,14 @@ var (
 	barEighthsH = []rune{'▏', '▎', '▍', '▌', '▋', '▊', '▉', '█'}
 )
 
+// BarSeries holds the data and color for one series in a bar chart.
 type BarSeries struct {
 	Name   string
 	Values []float64
 	Color  Color
 }
 
+// BarChart renders categorical data as vertical or horizontal bars.
 type BarChart struct {
 	cats   []string
 	series []BarSeries
@@ -21,10 +23,12 @@ type BarChart struct {
 	horizontal bool
 }
 
+// NewBar creates a bar chart with the given categories and series.
 func NewBar(cats []string, series ...BarSeries) *BarChart {
 	return &BarChart{chartBase: newChartBase(), cats: cats, series: series}
 }
 
+// NewBarValues creates a bar chart with a single series from the given values.
 func NewBarValues(cats []string, vals []float64) *BarChart {
 	return NewBar(cats, BarSeries{Values: vals})
 }
@@ -32,8 +36,13 @@ func NewBarValues(cats []string, vals []float64) *BarChart {
 // Title sets the chart title.
 func (b *BarChart) Title(t string) *BarChart { b.SetTitle(t); return b }
 
-func (b *BarChart) Add(s BarSeries) *BarChart    { b.series = append(b.series, s); return b }
-func (b *BarChart) Stacked(on bool) *BarChart    { b.stacked = on; return b }
+// Add appends a series to the chart.
+func (b *BarChart) Add(s BarSeries) *BarChart { b.series = append(b.series, s); return b }
+
+// Stacked stacks multiple series on top of each other instead of side by side.
+func (b *BarChart) Stacked(on bool) *BarChart { b.stacked = on; return b }
+
+// Horizontal renders categories down the left edge with bars growing right.
 func (b *BarChart) Horizontal(on bool) *BarChart { b.horizontal = on; return b }
 
 // ShowValues prints each bar's numeric value above its top (vertical bars).
@@ -54,6 +63,7 @@ func (b *BarChart) isHorizontal() bool {
 	return b.horizontal
 }
 
+// HeightHint returns the suggested height for the given width.
 func (b *BarChart) HeightHint(width int) int {
 	if h := b.chartBase.HeightHint(width); h > 0 {
 		return h
@@ -86,6 +96,7 @@ func horizontalBarHeight(cats int) int {
 	return h
 }
 
+// Draw renders the bar chart onto the canvas.
 func (b *BarChart) Draw(rc *Ctx, cv *Canvas) {
 	if b.isHorizontal() {
 		b.drawHorizontal(rc, cv)
