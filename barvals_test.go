@@ -178,6 +178,43 @@ func TestShortBarPartialSegment(t *testing.T) {
 	}
 }
 
+func TestBarAddSeriesReturnsReceiver(t *testing.T) {
+	bc := NewBarValues([]string{"a", "b"}, []float64{1, 2})
+	orig := bc
+	ret := bc.Add(BarSeries{Name: "extra", Values: []float64{3, 4}})
+	if ret != bc {
+		t.Error("Add did not return receiver")
+	}
+	if orig != bc {
+		t.Error("Add replaced receiver")
+	}
+	if len(bc.series) != 2 {
+		t.Fatalf("series len = %d, want 2", len(bc.series))
+	}
+	if bc.series[1].Name != "extra" {
+		t.Errorf("series[1].Name = %q, want extra", bc.series[1].Name)
+	}
+	if len(bc.series[1].Values) != 2 || bc.series[1].Values[0] != 3 {
+		t.Errorf("series[1].Values = %v", bc.series[1].Values)
+	}
+	out := renderD(bc, WithWidth(50))
+	if !strings.Contains(out, "extra") {
+		t.Errorf("legend missing added series:\n%s", out)
+	}
+}
+
+func TestBarAddEmptySeries(t *testing.T) {
+	bc := NewBarValues([]string{"a"}, []float64{5})
+	bc.Add(BarSeries{Name: "empty"})
+	if len(bc.series) != 2 {
+		t.Fatalf("series len = %d, want 2", len(bc.series))
+	}
+	out := renderD(bc, WithWidth(40))
+	if out == "" {
+		t.Error("empty add broke render")
+	}
+}
+
 func TestNegativeShortBarPartialSegment(t *testing.T) {
 	out := renderD(NewBarValues([]string{"s", "l"}, []float64{-0.4, -8}),
 		WithUnicode(true), WithWidth(36))

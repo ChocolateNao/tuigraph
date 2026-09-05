@@ -54,13 +54,13 @@ func TestCandlestickColorsConfigurable(t *testing.T) {
 	if base == altered {
 		t.Error("UpColor/DownColor had no effect on rendering")
 	}
-	if c := candleFixture(); c.up != Indexed(2) || c.down != Indexed(1) {
+	if c := candleFixture(); c.up != Green || c.down != Maroon {
 		t.Error("default colors are not green/red")
 	}
 	c := candleFixture()
 	c.ResetColors()
 	c.UpColor(Red)
-	if c.up != Red || c.down != Indexed(1) {
+	if c.up != Red || c.down != Maroon {
 		t.Error("ResetColors should restore defaults only when called")
 	}
 }

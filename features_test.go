@@ -174,7 +174,29 @@ func gaugeByStyle(s GaugeStyle) *Gauge {
 	return NewGauge(6, 10).Max(10).Style(s).ShowPercent(false).Title("")
 }
 
-func TestGaugeStylesDistinct(t *testing.T) {
+func TestGaugeColorReturnsReceiver(t *testing.T) {
+	g := NewGauge(5, 10)
+	ret := g.Color(Red)
+	if ret != g {
+		t.Error("Color did not return receiver")
+	}
+	if g.color != Red {
+		t.Errorf("color = %v, want Red", g.color)
+	}
+}
+
+func TestGaugeColorRendering(t *testing.T) {
+	def := renderD(NewGauge(5, 10).ShowPercent(false))
+	red := renderD(NewGauge(5, 10).ShowPercent(false).Color(Red), WithColor256())
+	if def == red {
+		t.Error("Color setter had no effect on render")
+	}
+	if !strings.Contains(red, "█") {
+		t.Errorf("colored gauge missing fill:\n%s", red)
+	}
+}
+
+func TestGaugeStyleDistinct(t *testing.T) {
 	styled := map[GaugeStyle]string{
 		GaugeBlocks:   renderD(gaugeByStyle(GaugeBlocks)),
 		GaugeASCII:    renderD(gaugeByStyle(GaugeASCII)),

@@ -2,8 +2,40 @@ package tuichart
 
 import (
 	"math"
+	"strings"
 	"testing"
 )
+
+func TestFixedScaleBothRanges(t *testing.T) {
+	p := NewPlot().Add(NewLineVals("a", []float64{1, 5, 3}))
+	p.SetXRange(0, 100)
+	p.SetYRange(0, 200)
+	out := renderD(p, WithWidth(40))
+	if !strings.Contains(out, "100") || !strings.Contains(out, "200") {
+		t.Errorf("fixed-range ticks missing:\n%s", out)
+	}
+}
+
+func TestFixedScaleDirect(t *testing.T) {
+	s := fixedScale(Linear, 0, 10)
+	if s.Min != 0 || s.Max != 10 {
+		t.Errorf("fixedScale(0,10) = %+v", s)
+	}
+	if s.Kind != Linear {
+		t.Errorf("kind = %v", s.Kind)
+	}
+}
+
+func TestFixedScaleDegenerate(t *testing.T) {
+	s := fixedScale(Linear, 5, 5)
+	if s.Min >= s.Max {
+		t.Errorf("degenerate equal range (%v, %v)", s.Min, s.Max)
+	}
+	z := fixedScale(Linear, 0, 0)
+	if z.Min >= z.Max || z.Min != -1 || z.Max != 1 {
+		t.Errorf("zero degenerate (%v, %v), want (-1, 1)", z.Min, z.Max)
+	}
+}
 
 func TestNiceTicksMonotonicInRange(t *testing.T) {
 	cases := [][3]float64{
@@ -108,5 +140,108 @@ func TestHistogramCounts(t *testing.T) {
 	}
 	if len(edges) != h.bins+1 {
 		t.Errorf("edges %d != bins+1 %d", len(edges), h.bins+1)
+	}
+}
+
+// ── histogram.go ────────────────────────────────────────────────────────────
+
+func TestHistogramColorReturnsSelf(t *testing.T) {
+	h := NewHistogram([]float64{1, 2, 3})
+	ret := h.Color(Red)
+	if ret != h {
+		t.Fatal("Color did not return receiver")
+	}
+	if h.color != Red {
+		t.Error("color not set")
+	}
+}
+
+func TestHistogramNameReturnsSelf(t *testing.T) {
+	h := NewHistogram([]float64{1, 2, 3})
+	ret := h.Name("freq")
+	if ret != h {
+		t.Fatal("Name did not return receiver")
+	}
+	if h.name != "freq" {
+		t.Errorf("name = %q", h.name)
+	}
+}
+
+func TestHistogramShowValuesReturnsSelf(t *testing.T) {
+	h := NewHistogram([]float64{1, 2, 3})
+	ret := h.ShowValues(true)
+	if ret != h {
+		t.Fatal("ShowValues did not return receiver")
+	}
+	if !h.showVals {
+		t.Error("ShowValues(true) did not enable showVals")
+	}
+}
+
+func TestHistogramEmptyData(t *testing.T) {
+	h := NewHistogram(nil)
+	counts, edges := h.Counts()
+	if counts != nil || edges != nil {
+		t.Error("empty histogram should return nil counts/edges")
+	}
+}
+
+func TestHistogramSingleValue(t *testing.T) {
+	h := NewHistogram([]float64{5})
+	counts, edges := h.Counts()
+	if len(counts) != 1 || len(edges) != 2 {
+		t.Errorf("single-value: counts=%v edges=%v", counts, edges)
+	}
+	if counts[0] != 1 {
+		t.Errorf("count = %d, want 1", counts[0])
+	}
+}
+
+func TestHistogramNaNData(t *testing.T) {
+	h := NewHistogram([]float64{1, math.NaN(), 2, 3})
+	counts, _ := h.Counts()
+	total := 0
+	for _, c := range counts {
+		total += c
+	}
+	// NaN should be skipped; only 3 valid values counted
+	if total != 3 {
+		t.Errorf("total count = %d, want 3 (NaN skipped)", total)
+	}
+}
+
+func TestHistogramBinsClamp(t *testing.T) {
+	h := NewHistogram([]float64{1, 2, 3})
+	h.Bins(0)
+	if h.bins != 1 {
+		t.Errorf("Bins(0) -> %d, want 1", h.bins)
+	}
+	h.Bins(100)
+	if h.bins != 64 {
+		t.Errorf("Bins(100) -> %d, want 64", h.bins)
+	}
+}
+
+func TestHistogramRenderNoColor(t *testing.T) {
+	h := NewHistogram([]float64{1, 2, 2, 3, 3, 3}).Bins(3).Title("h")
+	out := renderD(h, WithWidth(40))
+	if out == "" {
+		t.Fatal("empty render")
+	}
+}
+
+func TestHistogramTitleReturnsSelf(t *testing.T) {
+	h := NewHistogram([]float64{1, 2, 3})
+	ret := h.Title("myhist")
+	if ret != h {
+		t.Fatal("Title did not return receiver")
+	}
+}
+
+func TestHistogramOrientationReturnsSelf(t *testing.T) {
+	h := NewHistogram([]float64{1, 2, 3})
+	ret := h.Orientation(OrientHorizontal)
+	if ret != h {
+		t.Fatal("Orientation did not return receiver")
 	}
 }
